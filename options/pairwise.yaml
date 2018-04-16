@@ -1,0 +1,14 @@
+parent: default_abstract.yaml
+exp:
+    dir: logs/recipe1m/pairwise
+dataset:
+    freq_mismatch: 0.80
+model:
+    with_classif: True
+    criterion: 
+        name: trijoint
+        weight_classif: 0.01
+        keep_background: False
+        retrieval_strategy:
+            name: pairwise_pytorch # quadruplet, triplet, pairwise, or pairwise_pytorch
+            margin: 0.1
