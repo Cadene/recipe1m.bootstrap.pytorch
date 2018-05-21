@@ -1,6 +1,6 @@
 # recipe1m.bootstrap.pytorch
 
-The goal of this project is to create a cross-modal retrieval system for cooking recipes. This system is able to retrieve the corresponding recipe given an image (food selfie), and the corresponding image from the recipe. It was also the occasion to compare several state-of-the-art metric learning loss functions in a new context. This first analysis gave us some idea on how to improve the generalization of our model. Following this, we wrote two research papers on a new method, called Adamin after Adaptive Mining, that add structure in the retrieval space:
+We are a [Machine Learning team]([MLIA lab](https://mlia.lip6.fr/members)) from Sorbonne University. Our goal for this project was to create a cross-modal retrieval system for cooking recipes. This kind of systems is able to retrieve the corresponding recipe given an image (food selfie), and the corresponding image from the recipe. It was also the occasion to compare several state-of-the-art metric learning loss functions in a new context. This first analysis gave us some idea on how to improve the generalization of our model. Following this, we wrote two research papers on a new model, called Adamin after Adaptive Mining, that add structure in the retrieval space:
 
 - [Cross-Modal Retrieval in the Cooking Context: Learning Semantic Text-Image Embeddings (ACM SIGIR2018)](https://arxiv.org/abs/1804.11146)
 - [Images & Recipes: Retrieval in the cooking context (IEEE ICDE2018, DECOR workshop)](https://arxiv.org/abs/1805.00900)
@@ -16,7 +16,7 @@ If you would like to cite our paper, please do it as follow :)
 }
 ```
 
-We thank the authors of [Im2recipe](http://im2recipe.csail.mit.edu) who developped Recip1M, the dataset used in this project.
+Special thanks to the authors of [Im2recipe](http://im2recipe.csail.mit.edu) who developped Recip1M, the dataset used in this project.
 
 ## Introduction
 
@@ -53,8 +53,8 @@ capturing the high-level semantic information.
 Negative sampling strategy:
 
 - The classic triplet loss strategy takes all negative samples into account to calculate the error. However, this tends to produce a vanishing gradient.
-- The recent max (VSE++) strategy only takes the worst negative sample. It is usually efficient, but does not allow the model to converge on this dataset.
-- Our AdaMine strategy takes into account informative samples only (i.e., non-zero loss).
+- The recent (VSE++) strategy only takes the hard negative sample. It is usually efficient, but does not allow the model to converge on this dataset.
+- Our AdaMine strategy takes into account informative samples only (i.e., non-zero loss). It corresponds to a smooth curriculum learning, starting with the classic strategy and ending with the hard samples, but without the burden of switching between strategies. AdaMine also controls the trade-off between the retrieval and classification losses along the training.
 
 
 ## Install 
@@ -65,8 +65,8 @@ Negative sampling strategy:
 We don't provide support for python 2. We advise you to install python 3 with [Anaconda](https://www.continuum.io/downloads). Then, you can create an environment.
 
 ```
-conda create --name im2recipe python=3
-source activate im2recipe
+conda create --name recipe1m python=3
+source activate recipe1m
 ```
 
 ### 2. Fork/clone this repo
@@ -184,3 +184,6 @@ python -m bootstrap.run \
 ```
 
 
+## Acknowledgment
+
+Special thanks to our professors and friends from our lab for the perfect working atmosphere.
