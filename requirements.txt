@@ -1,0 +1,5 @@
+torch>=0.4
+torchvision
+lmdb
+bootstrap.pytorch
+pretrainedmodels

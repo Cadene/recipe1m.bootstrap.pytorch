@@ -11,8 +11,8 @@ from . import metrics
 
 class Trijoint(Model):
 
-    def __init__(self, engine=None, cuda_tf=transforms.ToCuda, variable_tf=transforms.ToVariable):
-        super(Trijoint, self).__init__(engine, cuda_tf=cuda_tf, variable_tf=variable_tf)
+    def __init__(self, engine=None, cuda_tf=transforms.ToCuda):
+        super(Trijoint, self).__init__(engine, cuda_tf=cuda_tf)
         self.network = networks.Trijoint()
         self.criterions = {
             'train': criterions.Trijoint(engine)

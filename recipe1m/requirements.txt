@@ -1,2 +1,0 @@
-lmdb
-torchvision

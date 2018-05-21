@@ -1,4 +1,4 @@
-parent: default_abstract.yaml
+parent: abstract.yaml
 exp:
     dir: logs/recipe1m/pairwise
 dataset:

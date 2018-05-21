@@ -1,13 +1,11 @@
+import sys
+import pretrainedmodels
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.serialization import load_lua
 from bootstrap.lib.logger import Logger
 from bootstrap.lib.options import Options
-
-import sys
-sys.path.append('../pretrained-models.pytorch')
-import pretrainedmodels
 
 class ResNet(nn.Module):
 
