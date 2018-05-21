@@ -95,13 +95,13 @@ http://im2recipe.csail.mit.edu/
 
 ### Basic scripts
 
-Extract features from images:
+- Extract features from images:
 
 ```
 TODO
 ```
 
-Launch training:
+- Launch training:
 
 ```
 python -m bootstrap.run \
@@ -109,13 +109,13 @@ python -m bootstrap.run \
 --exp.dir logs/2018-05-18_avg
 ```
 
-Display training curves:
+- Display training curves:
 
 ```
 google-chrome logs/2018-05-18_avg/view.html
 ```
 
-Resume training (only if a problem occurs):
+- Resume training (only if a problem occurs):
 
 ```
 python -m bootstrap.run \
@@ -123,7 +123,7 @@ python -m bootstrap.run \
 --exp.resume last
 ```
 
-Launch testing (at the end of the training):
+- Launch testing (at the end of the training):
 
 ```
 python -m bootstrap.run \
@@ -135,7 +135,7 @@ python -m bootstrap.run \
 
 ### Available models
 
-Pairwise loss:
+- Pairwise loss:
 
 ```
 python -m bootstrap.run \
@@ -143,7 +143,7 @@ python -m bootstrap.run \
 --exp.dir logs/2018-05-18_avg
 ```
 
-Triplet (VSE) loss:
+- Triplet (VSE) loss:
 
 ```
 python -m bootstrap.run \
@@ -151,7 +151,7 @@ python -m bootstrap.run \
 --exp.dir logs/2018-05-18_avg
 ```
 
-Triplet loss with semantic loss (ours):
+- Triplet loss with semantic loss (ours):
 
 ```
 python -m bootstrap.run \
@@ -159,7 +159,7 @@ python -m bootstrap.run \
 --exp.dir logs/2018-05-18_avg
 ```
 
-Triplet loss with semantic loss and adaptive sampling (ours):
+- Triplet loss with semantic loss and adaptive sampling (ours):
 
 ```
 python -m bootstrap.run \
@@ -167,7 +167,7 @@ python -m bootstrap.run \
 --exp.dir logs/2018-05-18_avg
 ```
 
-Triplet Max (VSE++) loss:
+- Triplet Max (VSE++) loss:
 
 ```
 python -m bootstrap.run \
@@ -175,7 +175,7 @@ python -m bootstrap.run \
 --exp.dir logs/2018-05-18_avg
 ```
 
-Lifted structure loss:
+- Lifted structure loss:
 
 ```
 python -m bootstrap.run \
