@@ -23,7 +23,7 @@ We thank the authors of [Im2recipe](http://im2recipe.csail.mit.edu) who developp
 ### Recipe-to-Image retrieval task
 
 <p align="center">
-    <img src="https://raw.githubusercontent.com/Cadene/recip1m.bootstrap.pytorch/raw/master/images/task.png" width="800"/>
+    <img src="https://githubusercontent.com/Cadene/recip1m.bootstrap.pytorch/raw/master/images/task.png" width="800"/>
 </p>
 
 Given a list of ingredients and a sequence of cooking instructions, the goal is to train a statistical model to retrieve the associated image. For each recipe, the top row indicates the top 5 images retrieved by our AdaMine model, and the bottom row, by a strong baseline.
@@ -31,7 +31,7 @@ Given a list of ingredients and a sequence of cooking instructions, the goal is 
 ### AdaMine model
 
 <p align="center">
-    <img src="https://raw.githubusercontent.com/Cadene/recip1m.bootstrap.pytorch/raw/master/images/model.png" width="500"/>
+    <img src="https://githubusercontent.com/Cadene/recip1m.bootstrap.pytorch/raw/master/images/model.png" width="500"/>
 </p>
 
 Features embedding:
