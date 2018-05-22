@@ -3,7 +3,6 @@ import torch.nn as nn
 from torch.autograd import Variable
 from bootstrap.lib.logger import Logger
 from bootstrap.lib.options import Options
-from bootstrap.lib.activation_handler import ActivationHandler
 
 class Pairwise(nn.Module):
 

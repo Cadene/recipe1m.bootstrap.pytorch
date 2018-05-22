@@ -49,8 +49,8 @@ engine:
     debug: False
     saving_criteria:
         #- train_epoch.loss(new_best<best)
-        - val_epoch.metric.med_im2recipe_mean:lt
-        - val_epoch.metric.recall_at_1_im2recipe_mean:gt
+        - eval_epoch.metric.med_im2recipe_mean:lt
+        - eval_epoch.metric.recall_at_1_im2recipe_mean:gt
         #- metric.recall_at_5_im2recipe_mean
         #- metric.recall_at_10_im2recipe_mean
         #- metric.med_recipe2im_mean
@@ -63,12 +63,12 @@ misc:
 view:
   - logs:train_epoch.loss
   - logs:train_epoch.bad_pairs
-  - logs:val_epoch.metric.med_im2recipe_mean
-  - logs:val_epoch.metric.recall_at_1_im2recipe_mean
-  - logs:val_epoch.metric.recall_at_5_im2recipe_mean
-  - logs:val_epoch.metric.recall_at_10_im2recipe_mean
-  - logs:val_epoch.metric.med_recipe2im_mean
-  - logs:val_epoch.metric.recall_at_1_recipe2im_mean
-  - logs:val_epoch.metric.recall_at_5_recipe2im_mean
-  - logs:val_epoch.metric.recall_at_10_recipe2im_mean
+  - logs:eval_epoch.metric.med_im2recipe_mean
+  - logs:eval_epoch.metric.recall_at_1_im2recipe_mean
+  - logs:eval_epoch.metric.recall_at_5_im2recipe_mean
+  - logs:eval_epoch.metric.recall_at_10_im2recipe_mean
+  - logs:eval_epoch.metric.med_recipe2im_mean
+  - logs:eval_epoch.metric.recall_at_1_recipe2im_mean
+  - logs:eval_epoch.metric.recall_at_5_recipe2im_mean
+  - logs:eval_epoch.metric.recall_at_10_recipe2im_mean
   - logs:optimizer.is_optimizer_recipe&image

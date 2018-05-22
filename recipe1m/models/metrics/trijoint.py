@@ -10,9 +10,10 @@ from . import utils
 
 class Trijoint(nn.Module):
 
-    def __init__(self, engine=None, mode='test'):
+    def __init__(self, engine=None, mode='train'):
         super(Trijoint, self).__init__()
         self.mode = mode
+        self.split = engine.dataset[mode].split
         self.with_classif = Options()['model']['with_classif']
         # Attributs to process 1000*10 matchs
         # for the retrieval evaluation procedure
@@ -28,7 +29,7 @@ class Trijoint(nn.Module):
 
         self.identifiers = {'image': [], 'recipe': []}
 
-        if engine and self.mode in ['val', 'test']:
+        if engine and self.mode == 'eval':
             engine.register_hook('eval_on_end_epoch', self.calculate_metrics)
 
     def forward(self, cri_out, net_out, batch):
@@ -43,7 +44,7 @@ class Trijoint(nn.Module):
                                               batch['recipe']['class_id'].data.squeeze().cpu(),
                                               topk=(1,),
                                               ignore_index=self.ignore_index)
-        if self.mode in ['val', 'test']:
+        if self.mode == 'eval':
             # Retrieval
             batch_size = len(batch['image']['index'])
             for i in range(batch_size):
@@ -52,11 +53,11 @@ class Trijoint(nn.Module):
                 if batch['match'].data[i][0] == -1:
                     continue
 
-                identifier = '{}_img_{}'.format(self.mode, batch['image']['index'][i])
+                identifier = '{}_img_{}'.format(self.split, batch['image']['index'][i])
                 utils.save_activation(identifier, net_out['image_embedding'][i].data.cpu())
                 self.identifiers['image'].append(identifier)
 
-                identifier = '{}_rcp_{}'.format(self.mode, batch['recipe']['index'][i])
+                identifier = '{}_rcp_{}'.format(self.split, batch['recipe']['index'][i])
                 utils.save_activation(identifier, net_out['recipe_embedding'][i].data.cpu())
                 self.identifiers['recipe'].append(identifier)
 
@@ -69,7 +70,7 @@ class Trijoint(nn.Module):
         final_matchs_left = self.nb_matchs_saved % self.nb_matchs_per_bag
 
         if final_nb_bags < self.nb_bags_retrieval:
-            log_level = Logger.ERROR if self.mode == 'test' else Logger.WARNING
+            log_level = Logger.ERROR if self.split == 'test' else Logger.WARNING
             Logger().log_message('Insufficient matchs ({} saved), {} bags instead of {}'.format(
                 self.nb_matchs_saved, final_nb_bags, self.nb_bags_retrieval), log_level=log_level)
 

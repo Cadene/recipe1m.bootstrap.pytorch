@@ -18,6 +18,6 @@ class Trijoint(Model):
             'train': criterions.Trijoint(engine)
         }
         self.metrics = {
-            'train': metrics.Trijoint(engine, Options()['dataset']['train_split']),
-            'eval': metrics.Trijoint(engine, Options()['dataset']['eval_split'])
+            'train': metrics.Trijoint(engine, mode='train'),
+            'eval': metrics.Trijoint(engine, mode='eval')
         }

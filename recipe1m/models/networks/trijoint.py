@@ -209,13 +209,12 @@ class RecipeEmbedding(nn.Module):
         return hn
 
     def forward_one_ingr(self, ingrs, emb_instrs=None):
-        from torch.autograd import Variable
         emb_ingr = self.forward_ingrs(ingrs)
         if emb_instrs is None:
             emb_instrs = torch.zeros(1,self.dim_instr_out)
         if emb_ingr.data.is_cuda:
             emb_instrs = emb_instrs.cuda()
-        emb_instrs = Variable(emb_instrs, requires_grad=False)
+        #emb_instrs = Variable(emb_instrs, requires_grad=False)
 
         fusion_out = torch.cat([emb_ingr, emb_instrs], 1)
         x = self.fc(fusion_out)

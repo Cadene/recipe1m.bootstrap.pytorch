@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
 from bootstrap.lib.logger import Logger
 from bootstrap.lib.options import Options
 from .triplet import Triplet

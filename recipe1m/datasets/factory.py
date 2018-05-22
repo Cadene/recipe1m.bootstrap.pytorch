@@ -10,7 +10,7 @@ def factory(engine=None):
             dataset['train'] = factory_recipe1m(Options()['dataset']['train_split'])
 
         if Options()['dataset'].get('eval_split', None): 
-            dataset['train'] = factory_recipe1m(Options()['dataset']['eval_split'])
+            dataset['eval'] = factory_recipe1m(Options()['dataset']['eval_split'])
     else:
         raise ValueError()
 

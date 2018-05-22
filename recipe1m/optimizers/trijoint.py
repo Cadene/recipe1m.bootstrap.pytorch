@@ -4,7 +4,7 @@ from bootstrap.lib.logger import Logger
 
 class Trijoint(torch.optim.Optimizer):
 
-    def __init__(self, model, engine):
+    def __init__(self, model, engine=None):
         self.model = model
         self.lr = Options()['optimizer']['lr']
         self.optimizers = {}
@@ -13,7 +13,8 @@ class Trijoint(torch.optim.Optimizer):
         self.current_optimizer_name = 'recipe'
         self.epoch = 0
         self._activate_model()
-        engine.register_hook('train_on_start_epoch', self._auto_fixed_fine_tune)
+        if engine:
+            engine.register_hook('train_on_start_epoch', self._auto_fixed_fine_tune)
 
     def state_dict(self):
         state = {}

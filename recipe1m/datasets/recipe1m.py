@@ -230,12 +230,12 @@ class Recipes(DatasetLMDB):
         ingrs = {}
         ingrs['data'] = torch.LongTensor(self.get(index, 'ingrs'))
         max_length = ingrs['data'].size(0)
-        ingrs['lengths'] = max_length - ingrs['data'].eq(0).sum(0)[0]
+        ingrs['lengths'] = max_length - ingrs['data'].eq(0).sum(0).item()
         ingrs['interim'] = self.data_to_words_ingrs(ingrs['data'], ingrs['lengths'])
         return ingrs
 
     def data_to_words_ingrs(self, data, lengths):
-        words = [self.ingrid_to_ingrname[data[i]] for i in range(lengths)]
+        words = [self.ingrid_to_ingrname[data[i].item()] for i in range(lengths)]
         return words
 
     def _load_instrs(self, index):
@@ -247,7 +247,7 @@ class Recipes(DatasetLMDB):
         for i in range(rlen):
             instrs['data'][i] = self.get(index_stv+i, 'stvecs') # -1 cause indexing lua to python
         max_length = instrs['data'].size(0)
-        instrs['lengths'] = max_length - instrs['data'][:,0].eq(0).sum(0)[0]
+        instrs['lengths'] = max_length - instrs['data'][:,0].eq(0).sum(0).item()
         return instrs
 
 
