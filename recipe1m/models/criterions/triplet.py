@@ -174,16 +174,18 @@ class Triplet(nn.Module):
         augmented_class2 = class2[extra_input2]
         
         # Instance-based triplets
-        if len(set(['IRR', 'RII', 'IRI', 'RIR']).intersection(self.substrategy)) > 0:
+        if len(set(['IRR', 'RII', 'IRI', 'RIR', 'LIFT']).intersection(self.substrategy)) > 0:
             distances = self.dist(instance_input1, instance_input2)
-            if len(set(['IRR', 'RII']).intersection(self.substrategy)) > 0:
+            if 'IRR' in self.substrategy:
                 cost = distances.diag().unsqueeze(1) - distances + self.alpha # all triplets
                 cost[cost < 0] = 0 # hinge
                 cost[range(cost.size(0)),range(cost.size(1))] = 0 # erase pos-pos pairs
-                if 'IRR' in self.substrategy:
-                    self.add_cost('IRR', self.calculate_cost(cost), bad_pairs, losses)
-                if 'RII' in self.substrategy:
-                    self.add_cost('RII', self.calculate_cost(cost.t()), bad_pairs, losses)
+                self.add_cost('IRR', self.calculate_cost(cost), bad_pairs, losses)
+            if 'RII' in self.substrategy:
+                cost = distances.diag().unsqueeze(0) - distances + self.alpha # all triplets
+                cost[cost < 0] = 0 # hinge
+                cost[range(cost.size(0)),range(cost.size(1))] = 0 # erase pos-pos pairs
+                self.add_cost('RII', self.calculate_cost(cost.t()), bad_pairs, losses)
             if 'IRI' in self.substrategy:
                 distances_image = self.dist(instance_input1, instance_input1)
                 cost = distances.diag().unsqueeze(1) - distances_image + self.alpha # all triplets
@@ -192,22 +194,20 @@ class Triplet(nn.Module):
                 self.add_cost('IRI', self.calculate_cost(cost), bad_pairs, losses)
             if 'RIR' in self.substrategy:
                 distances_recipe = self.dist(instance_input2, instance_input2)
-                cost = distances.diag().unsqueeze(1) - distances_recipe + self.alpha # all triplets
+                cost = distances.diag().unsqueeze(0) - distances_recipe + self.alpha # all triplets
                 cost[cost < 0] = 0 # hinge
                 cost[range(cost.size(0)),range(cost.size(1))] = 0 # erase pos-pos pairs
                 self.add_cost('RIR', self.calculate_cost(cost), bad_pairs, losses)
-
-        # Lifted, instance-based triplet
-        if len(set(['LIFT']).intersection(self.substrategy)) > 0:
-            distances = self.dist(instance_input1, instance_input2)
-            distances_mexp = (self.alpha - distances).exp()
-            sum0 = distances_mexp.sum(0)
-            sum1 = distances_mexp.sum(1)
-            negdiag = torch.log(sum0 + sum1 - 2*distances_mexp.diag()) # see equation 4 on the paper, this is the left side : https://arxiv.org/pdf/1511.06452.pdf
-            cost = distances.diag() + negdiag
-            cost[cost < 0] = 0 # hinge
-            cost = cost.pow(2).sum() / 2*distances.diag().numel()
-            self.add_cost('LIFT', cost, bad_pairs, losses)
+            # Lifted, instance-based triplet
+            if 'LIFT' in self.substrategy:
+                distances_mexp = (self.alpha - distances).exp()
+                sum0 = distances_mexp.sum(0)
+                sum1 = distances_mexp.sum(1)
+                negdiag = torch.log(sum0 + sum1 - 2*distances_mexp.diag()) # see equation 4 on the paper, this is the left side : https://arxiv.org/pdf/1511.06452.pdf
+                cost = distances.diag() + negdiag
+                cost[cost < 0] = 0 # hinge
+                cost = cost.pow(2).sum() / 2*distances.diag().numel()
+                self.add_cost('LIFT', cost, bad_pairs, losses)
             
         # Semantic-based triplets
         if len(set(['SIRR', 'SRII']).intersection(self.substrategy)) > 0:
@@ -228,76 +228,6 @@ class Triplet(nn.Module):
             cost = self.semantic_unimodal(self.dist(semantic_input2, semantic_input2), semantic_class2)
             self.add_cost('SRRR', self.calculate_cost(cost), bad_pairs, losses)
 
-        # Augmented set
-        if 'AIII' in self.substrategy:
-            cost = self.semantic_unimodal(self.dist(augmented_input1, augmented_input1), augmented_class1)
-            self.add_cost('AIII', self.calculate_cost(cost), bad_pairs, losses)
-
-        if 'ARRR' in self.substrategy:
-            cost = self.semantic_unimodal(self.dist(augmented_input2, augmented_input2), augmented_class2)
-            self.add_cost('ARRR', self.calculate_cost(cost), bad_pairs, losses)
-        
-        if len(set(['AIRR', 'ARII']).intersection(self.substrategy)) > 0:
-            distances = self.dist(augmented_input1, augmented_input2)
-            if 'AIRR' in self.substrategy:
-                cost = self.semantic_multimodal(distances, augmented_class1, augmented_class2, erase_diagonal=False)
-                self.add_cost('AIRR', self.calculate_cost(cost), bad_pairs, losses)
-
-            if 'ARII' in self.substrategy:
-                cost = self.semantic_multimodal(distances.t(), augmented_class2, augmented_class1, erase_diagonal=False)
-                self.add_cost('ARII', self.calculate_cost(cost), bad_pairs, losses)
-        
-        # Barycenters (implemented, never used)
-        if len(set(['RBB', 'IBB']).intersection(self.substrategy)) > 0:
-            self.reset_barycenters(force=False, base_variable=input1)
-            if 'IBB' in self.substrategy:
-                class_data = class1.squeeze().data
-                valid_positions = self.counters[class_data] != 0
-                if valid_positions.sum() != 0:
-                    valid_input_indexes = class1.data.new(list(range(class1.size(0)))).masked_select(valid_positions)
-                    valid_input = torch.index_select(input1, 0, valid_input_indexes)
-                    valid_classes_index = class_data.masked_select(valid_positions)
-                    valid_barycenters = torch.index_select(self.barycenters.detach(), 0, valid_classes_index)
-                    class_matrix = valid_classes_index.repeat(valid_classes_index.size(0), 1)
-                    disable = torch.eq(class_matrix, class_matrix.t())
-                    distances = self.dist(valid_input, valid_barycenters)
-                    cost = distances.diag().unsqueeze(1) - distances + self.alpha
-                    cost[cost < 0] = 0 # hinge
-                    cost[disable] = 0 # erase invalid pairs
-                    self.add_cost('IBB', self.calculate_cost(cost, enable_naive=False), bad_pairs, losses)
-                else:
-                    # requires_grad must be true here, because we have nothing to learn and it will crash otherwise
-                    self.add_cost('IBB', input1.data.new([2.0 + self.alpha]), bad_pairs, losses)
-
-            if 'RBB' in self.substrategy:
-                class_data = class2.squeeze().data
-                valid_positions = self.counters[class_data] != 0
-                if valid_positions.sum() != 0:
-                    valid_input_indexes = class2.data.new(list(range(class2.size(0)))).masked_select(valid_positions)
-                    valid_input = torch.index_select(input2, 0, valid_input_indexes)
-                    valid_classes_index = class_data.masked_select(valid_positions)
-                    valid_barycenters = torch.index_select(self.barycenters.detach(), 0, valid_classes_index)
-                    class_matrix = valid_classes_index.repeat(valid_classes_index.size(0), 1)
-                    disable = torch.eq(class_matrix, class_matrix.t())
-                    distances = self.dist(valid_input, valid_barycenters)
-                    cost = distances.diag().unsqueeze(1) - distances + self.alpha
-                    cost[cost < 0] = 0 # hinge
-                    cost[disable] = 0 # erase invalid pairs
-                    self.add_cost('RBB', self.calculate_cost(cost, enable_naive=False), bad_pairs, losses)
-                else:
-                    # requires_grad must be true here, because we have nothing to learn and it will crash otherwise
-                    self.add_cost('RBB', input2.data.new([2.0 + self.alpha]), bad_pairs, losses)
-
-            # update barycenters
-            for i in range(class1.size(0)):
-                self.barycenters[class1.data[i]] *= self.counters[class1.data[i][0]] / (self.counters[class1.data[i][0]] + 1)
-                self.barycenters[class1.data[i]] += (input1[i,:] / (self.counters[class1.data[i][0]] + 1)).detach()
-                self.counters[class1.data[i]] += 1
-                self.barycenters[class2.data[i]] *= self.counters[class2.data[i][0]] / (self.counters[class2.data[i][0]] + 1)
-                self.barycenters[class2.data[i]] += (input2[i,:] / (self.counters[class2.data[i][0]] + 1)).detach()
-                self.counters[class2.data[i]] += 1
-
-        # implement more substrategies here
         out = {}
         if len(bad_pairs.keys()) > 0:
             total_bad_pairs = input1.data.new([0])
