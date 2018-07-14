@@ -21,10 +21,6 @@ def default_items_tf():
         transforms.StackTensors()
     ])
 
-# def default_batch_tf(split):
-#     return transforms.Compose([
-#         transforms.ToCuda(),
-#     ])
 
 class Dataset(data.Dataset):
 
@@ -161,7 +157,6 @@ class Images(DatasetLMDB):
     def _load_image_data(self, index):
         # select random image from list of images for that sample
         nb_images = self.get(index, 'numims')
-        #Logger()('TOOOOO REMOVE BIIIIG WARNING')
         im_idx = torch.randperm(nb_images)[0]
         index_img = self.get(index, 'impos')[im_idx] - 1 # lua to python
 
@@ -185,7 +180,7 @@ class Recipes(DatasetLMDB):
         self.path_ingrs = Options()['model']['network']['path_ingrs']
         data = load_lua(self.path_ingrs)
         # idx+1 because 0 is padding
-        # FUCK OFF https://github.com/torralba-lab/im2recipe/blob/master/pyscripts/mk_dataset.py#L98
+        # https://github.com/torralba-lab/im2recipe/blob/master/pyscripts/mk_dataset.py#L98
         self.ingrid_to_ingrname = {idx+2:name for idx, name in enumerate(data[1])}
         self.ingrid_to_ingrname[1] = '</i>'
         self.ingrname_to_ingrid = {v:k for k,v in self.ingrid_to_ingrname.items()}
@@ -306,7 +301,7 @@ class Recipe1M(DatasetLMDB):
             is_match = torch.rand(1)[0] > self.freq_mismatch
         else:
             is_match = True
-        #is_match = True # DEBUG
+
         if is_match:
             item['image'] = self.images_dataset[index]
             item['match'] = torch.FloatTensor([1])

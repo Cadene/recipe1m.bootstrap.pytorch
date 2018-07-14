@@ -7,6 +7,7 @@ class Trijoint(torch.optim.Optimizer):
     def __init__(self, model, engine=None):
         self.model = model
         self.lr = Options()['optimizer']['lr']
+        self.switch_epoch = Options()['optimizer']['switch_epoch']
         self.optimizers = {}
         self.optimizers['recipe'] = torch.optim.Adam(self.model.network.get_parameters_recipe(), self.lr)
         self.optimizers['image'] = torch.optim.Adam(self.model.network.get_parameters_image(), self.lr)
@@ -22,7 +23,8 @@ class Trijoint(torch.optim.Optimizer):
         for key, value in self.optimizers.items():
             state['optimizers'][key] = value.state_dict()
         state['attributs'] = {
-            'current_optimizer_name': self.current_optimizer_name
+            'current_optimizer_name': self.current_optimizer_name,
+            'epoch': self.epoch
         }
         return state
 
@@ -55,7 +57,7 @@ class Trijoint(torch.optim.Optimizer):
             p.requires_grad = activate_image
 
     def _auto_fixed_fine_tune(self):
-        if self.current_optimizer_name == 'recipe' and self.epoch == Options()['optimizer']['switch_epoch']:
+        if self.current_optimizer_name == 'recipe' and self.epoch == self.switch_epoch:
             self.current_optimizer_name = 'recipe&image'
             self._activate_model()
             Logger()('Switched to optimizer '+self.current_optimizer_name)
