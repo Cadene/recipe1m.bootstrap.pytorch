@@ -28,7 +28,6 @@ class Trijoint(nn.Module):
             self.criterion_recipe_classif = nn.CrossEntropyLoss(ignore_index=self.ignore_index)
 
         self.retrieval_strategy = opt['retrieval_strategy.name']
-        #parameters = {'margin': opt['retrieval_strategy']['margin']}
 
         if self.retrieval_strategy == 'triplet':
             self.criterion_retrieval = Triplet(
@@ -36,15 +35,12 @@ class Trijoint(nn.Module):
                 nb_classes,
                 dim_emb,
                 engine)
-
-        # elif loss_name == 'quadruplet':
-        #     self.criterion_retrieval = Quadruplet()
-
+            
         elif loss_name == 'pairwise':
             self.criterion_retrieval = Pairwise(opt)
 
-        # elif loss_name == 'pairwise_pytorch':
-        #     self.criterion_retrieval = nn.CosineEmbeddingLoss()
+        elif loss_name == 'pairwise_pytorch':
+            self.criterion_retrieval = nn.CosineEmbeddingLoss()
 
         else:
             raise ValueError('Unknown loss ({})'.format(self.retrieval_strategy))
