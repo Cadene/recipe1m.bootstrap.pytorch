@@ -33,11 +33,10 @@ class ResNet(nn.Module):
 
 class ImageEmbedding(nn.Module):
 
-    def __init__(self):
+    def __init__(self, opt):
         super(ImageEmbedding, self).__init__()
-        self.dim_emb = Options()['model']['network']['dim_emb']
-        self.activations = Options()['model']['network']['activations'] \
-            if 'activations' in Options()['model']['network'] else None
+        self.dim_emb = opt['dim_emb']
+        self.activations = opt.get('activations', None)
         # modules
         self.convnet = ResNet()
         self.fc = nn.Linear(self.convnet.dim_out, self.dim_emb)
@@ -53,18 +52,16 @@ class ImageEmbedding(nn.Module):
 
 class RecipeEmbedding(nn.Module):
 
-    def __init__(self):
+    def __init__(self, opt):
         super(RecipeEmbedding, self).__init__()
-        self.path_ingrs = Options()['model']['network']['path_ingrs']
-        self.dim_ingr_out = Options()['model']['network']['dim_ingr_out'] # 2048
-        self.dim_instr_in = Options()['model']['network']['dim_instr_in']
-        self.dim_instr_out = Options()['model']['network']['dim_instr_out']
-        self.with_ingrs = Options()['model']['network']['with_ingrs']
-        self.with_instrs = Options()['model']['network']['with_instrs']
-        self.dim_emb = Options()['model']['network']['dim_emb']
-
-        self.activations = Options()['model']['network']['activations'] \
-            if 'activations' in Options()['model']['network'] else None
+        self.path_ingrs = opt['path_ingrs']
+        self.dim_ingr_out = opt['dim_ingr_out'] # 2048
+        self.dim_instr_in = opt['dim_instr_in']
+        self.dim_instr_out = opt['dim_instr_out']
+        self.with_ingrs = opt['with_ingrs']
+        self.with_instrs = opt['with_instrs']
+        self.dim_emb = opt['dim_emb']
+        self.activations = opt.get('activations', None)
         # modules
         if self.with_ingrs:
             self._make_emb_ingrs()
@@ -74,20 +71,20 @@ class RecipeEmbedding(nn.Module):
             self.rnn_instrs = nn.LSTM(self.dim_instr_in, self.dim_instr_out,
                                       bidirectional=False, batch_first=True)
 
-        if 'fusion' in Options()['model']['network']:
-            self.fusion = Options()['model']['network']['fusion']['name']
+        if 'fusion' in opt:
+            self.fusion = opt['fusion']['name']
             if self.fusion == 'mutan':
                 self.opt_mutan = {
                     'dim_hv': 2*self.dim_ingr_out,
                     'dim_hq': self.dim_instr_out,
-                    'dim_mm': Options()['model']['network']['fusion']['dim_mm'],
-                    'R': Options()['model']['network']['fusion']['R'],
-                    'dropout_hv': Options()['model']['network']['fusion']['dropout_hv'],
-                    'dropout_hq': Options()['model']['network']['fusion']['dropout_hq']
+                    'dim_mm': opt['fusion']['dim_mm'],
+                    'R': opt['fusion']['R'],
+                    'dropout_hv': opt['fusion']['dropout_hv'],
+                    'dropout_hq': opt['fusion']['dropout_hq']
                     #'activation_hv': 'identity'
                 }
                 self.mutan = MutanFusion(self.opt_mutan, visual_embedding=False, question_embedding=False)
-                self.dim_recipe = Options()['model']['network']['fusion']['dim_mm']
+                self.dim_recipe = opt['fusion']['dim_mm']
             elif self.fusion == 'mul':
                 self.dim_recipe = self.dim_instr_out
         else:
@@ -212,9 +209,8 @@ class RecipeEmbedding(nn.Module):
         emb_ingr = self.forward_ingrs(ingrs)
         if emb_instrs is None:
             emb_instrs = torch.zeros(1,self.dim_instr_out)
-        if emb_ingr.data.is_cuda:
+        if emb_ingr.is_cuda:
             emb_instrs = emb_instrs.cuda()
-        #emb_instrs = Variable(emb_instrs, requires_grad=False)
 
         fusion_out = torch.cat([emb_ingr, emb_instrs], 1)
         x = self.fc(fusion_out)
@@ -228,14 +224,14 @@ class RecipeEmbedding(nn.Module):
 
 class Trijoint(nn.Module):
 
-    def __init__(self):
+    def __init__(self, opt, nb_classes, with_classif=False):
         super(Trijoint, self).__init__()
-        self.dim_emb = Options()['model']['network']['dim_emb']
-        self.nb_classes = Options()['dataset']['nb_classes']
-        self.with_classif = Options()['model']['with_classif']
+        self.dim_emb = opt['dim_emb']
+        self.nb_classes = nb_classes
+        self.with_classif = with_classif
         # modules
-        self.image_embedding = ImageEmbedding()
-        self.recipe_embedding = RecipeEmbedding()
+        self.image_embedding = ImageEmbedding(opt)
+        self.recipe_embedding = RecipeEmbedding(opt)
 
         if self.with_classif:
             self.linear_classif = nn.Linear(self.dim_emb, self.nb_classes)

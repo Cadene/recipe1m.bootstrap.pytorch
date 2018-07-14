@@ -7,41 +7,28 @@ from bootstrap.lib.options import Options
 
 class Triplet(nn.Module):
 
-    def __init__(self, engine=None):
-        self.alpha = Options()['model']['criterion']['retrieval_strategy']['margin']
-        self.sampling = Options()['model']['criterion']['retrieval_strategy']['sampling']
+    def __init__(self, opt, nb_classes, dim_emb, engine=None):
+        self.alpha = opt['retrieval_strategy']['margin']
+        self.sampling = opt['retrieval_strategy']['sampling']
+        self.nb_samples = opt['retrieval_strategy'].get('nb_samples', 1)
+        self.substrategy = opt['retrieval_strategy'].get('substrategy', ['IRR'])
+        self.aggregation = opt['retrieval_strategy'].get('aggregation', 'mean')
+        self.id_background = opt['retrieval_strategy'].get('id_background', 0)
+        self.nb_classes = nb_classes
+        self.dim_emb = dim_emb
         
-        if 'nb_samples' not in Options()['model']['criterion']['retrieval_strategy']:
-            Options()['model']['criterion']['retrieval_strategy']['nb_samples'] = 1
-        
-        if 'substrategy' in Options()['model']['criterion']['retrieval_strategy']:
-            self.substrategy = Options()['model']['criterion']['retrieval_strategy']['substrategy']
-        else:
-            self.substrategy = ['IRR']
-
-        if 'aggregation' not in Options()['model']['criterion']['retrieval_strategy']:
-            Options()['model']['criterion']['retrieval_strategy']['aggregation'] = 'mean'
-            Logger()('No aggregation strategy defined. Automatically setting it to: {}'.format(Options()['model']['criterion']['retrieval_strategy']['aggregation']))
-        
-        if 'substrategy_weights' in Options()['model']['criterion']['retrieval_strategy']:
-            self.substrategy_weights = Options()['model']['criterion']['retrieval_strategy']['substrategy_weights']
+        if 'substrategy_weights' in opt['retrieval_strategy']:
+            self.substrategy_weights = opt['retrieval_strategy']['substrategy_weights']
             if len(self.substrategy) > len(self.substrategy_weights):
-                Logger()('Incorrect number of items in substrategy_weights (expected {}, got {})'.format(len(self.substrategy), len(self.substrategy_weights)), Logger.ERROR)
+                Logger()('Incorrect number of items in substrategy_weights (expected {}, got {})'.format(
+                    len(self.substrategy), len(self.substrategy_weights)), Logger.ERROR)
             elif len(self.substrategy) < len(self.substrategy_weights):
-                Logger()('Higher number of items in substrategy_weights than expected ({}, got {}). Discarding exceeding values'.format(len(self.substrategy), len(self.substrategy_weights)), Logger.WARNING)
+                Logger()('Higher number of items in substrategy_weights than expected ({}, got {}). Discarding exceeding values'.format(
+                    len(self.substrategy), len(self.substrategy_weights)), Logger.WARNING)
         else:
             Logger()('No substrategy_weights provided, automatically setting all items to 1', Logger.WARNING)
             self.substrategy_weights = [1.0] * len(self.substrategy)
         
-        if 'id_background' in Options()['model']['criterion']['retrieval_strategy']:
-            self.id_background = Options()['model']['criterion']['retrieval_strategy']['id_background']
-        else:
-            Logger()('id_background is not defined. Automatically setting it to 0', Logger.WARNING)
-            self.id_background = 0
-        
-        self.nb_classes = Options()['dataset']['nb_classes']
-        self.dim_emb = Options()['model']['network']['dim_emb']
-
         if engine:
             engine.register_hook('train_on_end_epoch', self.reset_barycenters)
 
@@ -68,18 +55,18 @@ class Triplet(nn.Module):
         else:
             Logger()('Unknown substrategy {}.'.format(self.sampling), Logger.ERROR)
             
-        return ans[:,:Options()['model']['criterion']['retrieval_strategy']['nb_samples']]
+        return ans[:,:self.nb_samples]
 
     def add_cost(self, name, cost, bad_pairs, losses):
         invalid_pairs = (cost == 0).float().sum()
         bad_pairs['bad_pairs_{}'.format(name)] = invalid_pairs / cost.numel()
-        if Options()['model']['criterion']['retrieval_strategy']['aggregation'] == 'mean':
+        if self.aggregation == 'mean':
             losses['loss_{}'.format(name)] = cost.mean() * self.substrategy_weights[self.substrategy.index(name)]
-        elif Options()['model']['criterion']['retrieval_strategy']['aggregation'] == 'valid':
+        elif self.aggregation == 'valid':
             valid_pairs = cost.numel() - invalid_pairs
             losses['loss_{}'.format(name)] = cost.sum() * self.substrategy_weights[self.substrategy.index(name)] / valid_pairs
         else:
-            Logger()('Unknown aggregation strategy {}.'.format(Options()['model']['criterion']['retrieval_strategy']['aggregation']), Logger.ERROR)
+            Logger()('Unknown aggregation strategy {}.'.format(self.aggregation), Logger.ERROR)
 
     def reset_barycenters(self, force=True, base_variable=None):
         if len(set(['RBB', 'IBB']).intersection(self.substrategy)) > 0:

@@ -4,10 +4,10 @@ from bootstrap.lib.logger import Logger
 
 class Trijoint(torch.optim.Optimizer):
 
-    def __init__(self, model, engine=None):
+    def __init__(self, opt, model, engine=None):
         self.model = model
-        self.lr = Options()['optimizer']['lr']
-        self.switch_epoch = Options()['optimizer']['switch_epoch']
+        self.lr = opt['lr']
+        self.switch_epoch = opt['switch_epoch']
         self.optimizers = {}
         self.optimizers['recipe'] = torch.optim.Adam(self.model.network.get_parameters_recipe(), self.lr)
         self.optimizers['image'] = torch.optim.Adam(self.model.network.get_parameters_image(), self.lr)

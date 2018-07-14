@@ -29,7 +29,7 @@ model:
         activations:
             - tanh
             - normalize
-    criterion: NotImplemented
+    criterion: __NotImplemented__
     metric:
         name: trijoint
         retrieval_dir: /tmp/retrieval

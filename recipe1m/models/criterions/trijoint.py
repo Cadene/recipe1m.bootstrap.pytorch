@@ -6,20 +6,20 @@ from .triplet import Triplet
 
 class Trijoint(nn.Module):
 
-    def __init__(self, engine=None):
+    def __init__(self, opt, nb_classes, dim_emb, with_classif=False, engine=None):
         super(Trijoint, self).__init__()
-        self.with_classif = Options()['model']['with_classif']
+        self.with_classif = with_classif
         if self.with_classif:
-            self.weight_classif = Options()['model']['criterion']['weight_classif']
+            self.weight_classif = opt['weight_classif']
             if self.weight_classif == 0:
                 Logger()('You should use "--model.with_classif False"', Logger.ERROR)
-            self.weight_retrieval = 1 - 2 * Options()['model']['criterion']['weight_classif']
+            self.weight_retrieval = 1 - 2 * opt['weight_classif']
 
-        if 'keep_background' in Options()['model']['criterion'] and Options()['model']['criterion']['keep_background']:
-            self.keep_background = True
-            self.ignore_index = -100 # http://pytorch.org/docs/master/nn.html?highlight=crossentropy#torch.nn.CrossEntropyLoss
+        self.keep_background = opt.get('keep_background', False)
+        if self.keep_background:
+            # http://pytorch.org/docs/master/nn.html?highlight=crossentropy#torch.nn.CrossEntropyLoss
+            self.ignore_index = -100
         else:
-            self.keep_background = False
             self.ignore_index = 0
 
         Logger()('ignore_index={}'.format(self.ignore_index))
@@ -27,17 +27,21 @@ class Trijoint(nn.Module):
             self.criterion_image_classif = nn.CrossEntropyLoss(ignore_index=self.ignore_index)
             self.criterion_recipe_classif = nn.CrossEntropyLoss(ignore_index=self.ignore_index)
 
-        self.retrieval_strategy = Options()['model']['criterion']['retrieval_strategy']['name']
-        #parameters = {'margin': Options()['model']['criterion']['retrieval_strategy']['margin']}
+        self.retrieval_strategy = opt['retrieval_strategy.name']
+        #parameters = {'margin': opt['retrieval_strategy']['margin']}
 
         if self.retrieval_strategy == 'triplet':
-            self.criterion_retrieval = Triplet(engine)
+            self.criterion_retrieval = Triplet(
+                opt,
+                nb_classes,
+                dim_emb,
+                engine)
 
         # elif loss_name == 'quadruplet':
         #     self.criterion_retrieval = Quadruplet()
 
-        # elif loss_name == 'pairwise':
-        #     self.criterion_retrieval = Pairwise()
+        elif loss_name == 'pairwise':
+            self.criterion_retrieval = Pairwise(opt)
 
         # elif loss_name == 'pairwise_pytorch':
         #     self.criterion_retrieval = nn.CosineEmbeddingLoss()

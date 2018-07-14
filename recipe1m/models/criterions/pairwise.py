@@ -6,10 +6,10 @@ from bootstrap.lib.options import Options
 
 class Pairwise(nn.Module):
 
-    def __init__(self):
+    def __init__(self, opt):
         super(Pairwise, self).__init__()
-        self.alpha_pos = Options()['model']['criterion']['retrieval_strategy']['pos_margin']
-        self.alpha_neg = Options()['model']['criterion']['retrieval_strategy']['neg_margin']
+        self.alpha_pos = opt['retrieval_strategy']['pos_margin']
+        self.alpha_neg = opt['retrieval_strategy']['neg_margin']
 
     def forward(self, input1, input2, target):
         # target should be 1 for matched samples or -1 for not matched ones

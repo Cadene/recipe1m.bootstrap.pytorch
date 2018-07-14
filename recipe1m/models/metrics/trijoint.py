@@ -10,19 +10,19 @@ from . import utils
 
 class Trijoint(nn.Module):
 
-    def __init__(self, engine=None, mode='train'):
+    def __init__(self, opt, with_classif=False, engine=None, mode='train'):
         super(Trijoint, self).__init__()
         self.mode = mode
-        self.split = engine.dataset[mode].split
-        self.with_classif = Options()['model']['with_classif']
+        self.with_classif = with_classif
+        self.engine = engine
         # Attributs to process 1000*10 matchs
         # for the retrieval evaluation procedure
-        self.nb_bags_retrieval = Options()['model']['metric']['nb_bags']
-        self.nb_matchs_per_bag = Options()['model']['metric']['nb_matchs_per_bag']
+        self.nb_bags_retrieval = opt['nb_bags']
+        self.nb_matchs_per_bag = opt['nb_matchs_per_bag']
         self.nb_matchs_expected = self.nb_bags_retrieval * self.nb_matchs_per_bag
         self.nb_matchs_saved = 0
 
-        if 'keep_background' in Options()['model']['criterion'] and Options()['model']['criterion']['keep_background']:
+        if opt.get('keep_background', False):
             self.ignore_index = None
         else:
             self.ignore_index = 0
@@ -30,6 +30,7 @@ class Trijoint(nn.Module):
         self.identifiers = {'image': [], 'recipe': []}
 
         if engine and self.mode == 'eval':
+            self.split = engine.dataset[mode].split
             engine.register_hook('eval_on_end_epoch', self.calculate_metrics)
 
     def forward(self, cri_out, net_out, batch):
@@ -44,7 +45,7 @@ class Trijoint(nn.Module):
                                               batch['recipe']['class_id'].detach().squeeze().cpu(),
                                               topk=(1,),
                                               ignore_index=self.ignore_index)
-        if self.mode == 'eval':
+        if self.engine and self.mode == 'eval':
             # Retrieval
             batch_size = len(batch['image']['index'])
             for i in range(batch_size):
