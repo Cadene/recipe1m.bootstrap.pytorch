@@ -16,7 +16,7 @@ If you would like to cite our paper, please do it as follow :)
 }
 ```
 
-Special thanks to the authors of [Im2recipe](http://im2recipe.csail.mit.edu) who developped Recip1M, the dataset used in this project.
+Special thanks to the authors of [Im2recipe](http://im2recipe.csail.mit.edu) who developped Recip1M, the dataset used in this research project.
 
 ## Introduction
 
@@ -69,16 +69,20 @@ conda create --name recipe1m python=3
 source activate recipe1m
 ```
 
-### 2. Fork/clone this repo
+### 2. Fork/clone bootstrap.pytorch and this repo
+
+We used a [high level framework](https://github.com/Cadene/bootstrap.pytorch.git) to be able to focus on the model instead of boilerplate code.
 
 ```
 cd $HOME
-git clone https://github.com/Cadene/recipe1m.bootstrap.pytorch.git 
-cd recipe1m.bootstrap.pytorch
+git clone https://github.com/Cadene/bootstrap.pytorch.git
+cd bootstrap.pytorch
 pip install -r requirements.txt
+git clone https://github.com/Cadene/recipe1m.bootstrap.pytorch.git recipe1m
+cd recipe1m
+pip install -r requirements.txt
+cd ..
 ```
-
-Note: You will need [bootstrap.pytorch](https://github.com/Cadene/bootstrap.pytorch), a high level framework for deep learning project, to run the code. It is included in the requirements text file.
 
 ### 3. Download the dataset
 
@@ -89,7 +93,7 @@ cd $DATA
 
 http://im2recipe.csail.mit.edu/
 
-
+TODO: we are going to upload a modified version of the im2recipe dataset
 
 ## Reproducing the results
 
@@ -105,7 +109,7 @@ TODO
 
 ```
 python -m bootstrap.run \
---path_opts recipe1m/options/avg.yaml \
+-o recipe1m/options/avg.yaml \
 --exp.dir logs/2018-05-18_avg
 ```
 
@@ -119,7 +123,7 @@ google-chrome logs/2018-05-18_avg/view.html
 
 ```
 python -m bootstrap.run \
---path_opts logs/2018-05-18_avg/options.yaml \
+-o logs/2018-05-18_avg/options.yaml \
 --exp.resume last
 ```
 
@@ -127,7 +131,7 @@ python -m bootstrap.run \
 
 ```
 python -m bootstrap.run \
---path_opts logs/2018-05-18_avg/options.yaml \
+-o logs/2018-05-18_avg/options.yaml \
 --exp.resume best_eval_epoch.recall@1 \
 --dataset.train_split \
 --dataset.eval_split test
@@ -139,7 +143,7 @@ python -m bootstrap.run \
 
 ```
 python -m bootstrap.run \
---path_opts recipe1m/options/avg.yaml \
+-o recipe1m/options/avg.yaml \
 --exp.dir logs/2018-05-18_avg
 ```
 
@@ -147,7 +151,7 @@ python -m bootstrap.run \
 
 ```
 python -m bootstrap.run \
---path_opts recipe1m/options/avg.yaml \
+-o recipe1m/options/avg.yaml \
 --exp.dir logs/2018-05-18_avg
 ```
 
@@ -155,7 +159,7 @@ python -m bootstrap.run \
 
 ```
 python -m bootstrap.run \
---path_opts recipe1m/options/avg.yaml \
+-o recipe1m/options/avg.yaml \
 --exp.dir logs/2018-05-18_avg
 ```
 
@@ -163,7 +167,7 @@ python -m bootstrap.run \
 
 ```
 python -m bootstrap.run \
---path_opts recipe1m/options/avg.yaml \
+-o recipe1m/options/avg.yaml \
 --exp.dir logs/2018-05-18_avg
 ```
 
@@ -171,7 +175,7 @@ python -m bootstrap.run \
 
 ```
 python -m bootstrap.run \
---path_opts recipe1m/options/avg.yaml \
+-o recipe1m/options/avg.yaml \
 --exp.dir logs/2018-05-18_avg
 ```
 
@@ -179,7 +183,7 @@ python -m bootstrap.run \
 
 ```
 python -m bootstrap.run \
---path_opts recipe1m/options/avg.yaml \
+-o recipe1m/options/avg.yaml \
 --exp.dir logs/2018-05-18_avg
 ```
 
