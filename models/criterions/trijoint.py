@@ -3,6 +3,7 @@ import torch.nn as nn
 from bootstrap.lib.logger import Logger
 from bootstrap.lib.options import Options
 from .triplet import Triplet
+from .pairwise import Pairwise
 
 class Trijoint(nn.Module):
 
