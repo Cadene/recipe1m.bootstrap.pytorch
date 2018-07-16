@@ -42,6 +42,7 @@ optimizer:
     lr: 0.0001
     switch_step: 50000
     batch_size_factor:
+    clip_grad: 8
 engine:
     name: logger
     nb_epochs: 80
