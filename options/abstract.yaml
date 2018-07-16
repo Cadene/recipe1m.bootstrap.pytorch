@@ -49,18 +49,18 @@ engine:
     print_freq: 10
     debug: False
     saving_criteria:
-        #- train_epoch.loss(new_best<best)
-        - eval_epoch.metric.med_im2recipe_mean:lt
-        - eval_epoch.metric.recall_at_1_im2recipe_mean:gt
-        #- metric.recall_at_5_im2recipe_mean
-        #- metric.recall_at_10_im2recipe_mean
-        #- metric.med_recipe2im_mean
-        #- metric.recall_at_1_recipe2im_mean
-        #- metric.recall_at_5_recipe2im_mean
-        #- metric.recall_at_10_recipe2im_mean
+        #- train_epoch.loss:min
+        - eval_epoch.metric.med_im2recipe_mean:min
+        - eval_epoch.metric.recall_at_1_im2recipe_mean:max
+        #- metric.recall_at_5_im2recipe_mean:max
+        #- metric.recall_at_10_im2recipe_mean:max
+        #- metric.med_recipe2im_mean:min
+        #- metric.recall_at_1_recipe2im_mean:max
+        #- metric.recall_at_5_recipe2im_mean:max
+        #- metric.recall_at_10_recipe2im_mean:max
 misc:
     cuda: True
-    seed: 1337
+    seed: 1338
 view:
   - logs:train_epoch.loss
   - logs:train_epoch.bad_pairs
