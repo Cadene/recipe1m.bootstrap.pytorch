@@ -35,32 +35,40 @@ class Trijoint(nn.Module):
                 nb_classes,
                 dim_emb,
                 engine)
-            
-        elif loss_name == 'pairwise':
+
+        elif self.retrieval_strategy == 'pairwise':
             self.criterion_retrieval = Pairwise(opt)
 
-        elif loss_name == 'pairwise_pytorch':
+        elif self.retrieval_strategy == 'pairwise_pytorch':
             self.criterion_retrieval = nn.CosineEmbeddingLoss()
 
         else:
             raise ValueError('Unknown loss ({})'.format(self.retrieval_strategy))
 
-    def forward(self, activations, batch):
-        out = self.criterion_retrieval(activations['image_embedding'],
-                                       activations['recipe_embedding'],
-                                       batch['match'],
-                                       batch['image']['class_id'],
-                                       batch['recipe']['class_id'])
+    def forward(self, net_out, batch):
+        if self.retrieval_strategy == 'triplet':
+            out = self.criterion_retrieval(net_out['image_embedding'],
+                                           net_out['recipe_embedding'],
+                                           batch['match'],
+                                           batch['image']['class_id'],
+                                           batch['recipe']['class_id'])
+        elif self.retrieval_strategy == 'pairwise':
+            out = self.criterion_retrieval(net_out['image_embedding'],
+                                           net_out['recipe_embedding'],
+                                           batch['match'])
+        elif self.retrieval_strategy == 'pairwise_pytorch':
+            out = {}
+            out['loss'] = self.criterion_retrieval(net_out['image_embedding'],
+                                                   net_out['recipe_embedding'],
+                                                   batch['match'])
+
         if self.with_classif:
-            out['image_classif'] = self.criterion_image_classif(activations['image_classif'],
-                                                                batch['image']['class_id'].squeeze())
-            out['recipe_classif'] = self.criterion_recipe_classif(activations['recipe_classif'],
-                                                                  batch['recipe']['class_id'].squeeze())
+            out['image_classif'] = self.criterion_image_classif(net_out['image_classif'],
+                                                                batch['image']['class_id'].squeeze(1))
+            out['recipe_classif'] = self.criterion_recipe_classif(net_out['recipe_classif'],
+                                                                  batch['recipe']['class_id'].squeeze(1))
             out['loss'] *= self.weight_retrieval
             out['loss'] += out['image_classif'] * self.weight_classif
             out['loss'] += out['recipe_classif'] * self.weight_classif
-
-        # for key, value in out.items():
-        #     Logger().log_value('{}.batch.criterion.{}'.format(self.mode,key), value, should_print=True)
 
         return out
