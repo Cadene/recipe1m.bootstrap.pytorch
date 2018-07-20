@@ -13,12 +13,12 @@ class Extract(Engine):
     def __init__(self):
         super(Extract, self).__init__()
 
-    def eval_epoch(self, model, dataset, epoch, mode='val', logs_json=False):
+    def extract(self, mode='eval', logs_json=False):
         utils.set_random_seed(Options()['misc']['seed'] + epoch) # to be able to reproduce exps on reload
         Logger()('Extract model on {}set for epoch {}'.format(dataset.split, epoch))
-        model.set_mode(mode)
+        model.eval()
 
-        dir_extract = os.path.join(Options()['exp']['dir'], 'extract', mode)
+        dir_extract = os.path.join(Options()['exp']['dir'], 'extract', dataset[mode].split)
         dir_recipe = os.path.join(dir_extract, 'recipe')
         dir_image = os.path.join(dir_extract, 'image')
         os.system('mkdir -p '+dir_recipe)
@@ -40,13 +40,9 @@ class Extract(Engine):
             self.hook(mode+'_on_start_batch')
             timer['load'] = time.time() - timer['elapsed']
 
-            if model.is_cuda:
-                batch = model.cuda_tf()(batch)
+            with torch.no_grad():
+                out = model(batch)
 
-            is_volatile = (model.mode not in ['train', 'trainval'])
-            batch = model.variable_tf(volatile=is_volatile)(batch)
-
-            out = model.network(batch)
             self.hook(mode+'_on_forward')
 
             for j, idx in enumerate(batch['recipe']['index']):
@@ -61,10 +57,10 @@ class Extract(Engine):
             else:
                 timer['run_avg'] = timer['run_avg'] * 0.8 + timer['process'] * 0.2
 
-            Logger().log_value('train_batch.batch', i, should_print=False)
-            Logger().log_value('train_batch.epoch', epoch, should_print=False)
-            Logger().log_value('train_batch.timer.process', timer['process'], should_print=False)
-            Logger().log_value('train_batch.timer.load', timer['load'], should_print=False)
+            Logger().log_value('eval_batch.batch', i, should_print=False)
+            Logger().log_value('eval_batch.epoch', epoch, should_print=False)
+            Logger().log_value('eval_batch.timer.process', timer['process'], should_print=False)
+            Logger().log_value('eval_batch.timer.load', timer['load'], should_print=False)
 
             for key, value in out.items():
                 if value.dim() == 1 and value.size(0) == 1:
@@ -73,7 +69,7 @@ class Extract(Engine):
                     if hasattr(value, 'data'):
                         value = value.data[0]
                     out_epoch[key].append(value)
-                    Logger().log_value('train_batch.'+key, value, should_print=False)
+                    Logger().log_value('eval_batch.'+key, value, should_print=False)
 
             if i % Options()['misc']['print_freq'] == 0:
                 Logger()("{}: epoch {} | batch {}/{}".format(mode, epoch, i, len(batch_loader) - 1))

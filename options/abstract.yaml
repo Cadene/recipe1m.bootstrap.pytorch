@@ -40,9 +40,9 @@ optimizer:
     name: trijoint_fixed_fine_tune
     switch_epoch: 20
     lr: 0.0001
-    switch_step: 50000
-    batch_size_factor:
-    clip_grad: 8
+    #switch_step: 50000
+    batch_size_factor: # TODO remove?
+    clip_grad: 8.
 engine:
     name: logger
     nb_epochs: 80
@@ -73,3 +73,4 @@ view:
   - logs:eval_epoch.metric.recall_at_5_recipe2im_mean
   - logs:eval_epoch.metric.recall_at_10_recipe2im_mean
   - logs:optimizer.is_optimizer_recipe&image
+  - logs:optimizer.total_norm
