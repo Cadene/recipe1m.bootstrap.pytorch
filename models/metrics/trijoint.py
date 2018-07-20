@@ -37,12 +37,12 @@ class Trijoint(nn.Module):
         out = {}
         if self.with_classif:
             # Accuracy
-            [out['acc_image']] = utils.accuracy(net_out['image_classif'].detach().cpu(),
-                                             batch['image']['class_id'].detach().squeeze().cpu(),
+            [out['acc_image']] = utils.accuracy(net_out['image_classif'].data.cpu(),
+                                             batch['image']['class_id'].data.squeeze().cpu(),
                                              topk=(1,),
                                              ignore_index=self.ignore_index)
-            [out['acc_recipe']] = utils.accuracy(net_out['recipe_classif'].detach().cpu(),
-                                              batch['recipe']['class_id'].detach().squeeze().cpu(),
+            [out['acc_recipe']] = utils.accuracy(net_out['recipe_classif'].data.cpu(),
+                                              batch['recipe']['class_id'].data.squeeze().cpu(),
                                               topk=(1,),
                                               ignore_index=self.ignore_index)
         if self.engine and self.mode == 'eval':
@@ -55,11 +55,11 @@ class Trijoint(nn.Module):
                     continue
 
                 identifier = '{}_img_{}'.format(self.split, batch['image']['index'][i])
-                utils.save_activation(identifier, net_out['image_embedding'][i].detach().cpu())
+                utils.save_activation(identifier, net_out['image_embedding'][i].data.cpu())
                 self.identifiers['image'].append(identifier)
 
                 identifier = '{}_rcp_{}'.format(self.split, batch['recipe']['index'][i])
-                utils.save_activation(identifier, net_out['recipe_embedding'][i].detach().cpu())
+                utils.save_activation(identifier, net_out['recipe_embedding'][i].data.cpu())
                 self.identifiers['recipe'].append(identifier)
 
                 self.nb_matchs_saved += 1   

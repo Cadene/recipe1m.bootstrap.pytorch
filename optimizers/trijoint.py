@@ -1,7 +1,7 @@
 import torch
 from bootstrap.lib.options import Options
 from bootstrap.lib.logger import Logger
-from torch.nn.utils.clip_grad import clip_grad_norm_
+from torch.nn.utils.clip_grad import clip_grad_norm
 
 class Trijoint(torch.optim.Optimizer):
 
