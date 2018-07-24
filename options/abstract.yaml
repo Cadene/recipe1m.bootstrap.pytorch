@@ -61,6 +61,7 @@ engine:
 misc:
     cuda: True
     seed: 1338
+    logs_name:
 view:
   - logs:train_epoch.loss
   - logs:train_epoch.bad_pairs
