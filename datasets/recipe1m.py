@@ -13,6 +13,7 @@ from bootstrap.datasets import utils
 from bootstrap.datasets import transforms
 
 from .batch_sampler import BatchSamplerTripletClassif
+from bootstrap.lib.options import Options
 
 def default_items_tf():
     return transforms.Compose([
@@ -29,20 +30,29 @@ class Dataset(data.Dataset):
         self.dir_data = dir_data
         self.split = split
         self.batch_size = batch_size
-        self.nb_threads = nb_threads                           
+        self.nb_threads = nb_threads
         self.items_tf = items_tf
 
     def make_batch_loader(self, shuffle=True):
         # allways shuffle even for valset/testset
         # see testing procedure
-        return data.DataLoader(self,
-            batch_size=self.batch_size,
-            num_workers=self.nb_threads,
-            shuffle=shuffle,
-            pin_memory=True,
-            collate_fn=self.items_tf(),
-            drop_last=True) # Removing last batch if not full (quick fix accuracy calculation with class 0 only)
 
+        if Options()['dataset'].get("debug", False):
+            return data.DataLoader(self,
+                batch_size=self.batch_size,
+                num_workers=self.nb_threads,
+                shuffle=False,
+                pin_memory=True,
+                collate_fn=self.items_tf(),
+                drop_last=True) # Removing last batch if not full (quick fix accuracy calculation with class 0 only)
+        else:
+            return data.DataLoader(self,
+                batch_size=self.batch_size,
+                num_workers=self.nb_threads,
+                shuffle=shuffle,
+                pin_memory=True,
+                collate_fn=self.items_tf(),
+                drop_last=True) # Removing last batch if not full (quick fix accuracy calculation with class 0 only)
 
 class DatasetLMDB(Dataset):
 
@@ -157,7 +167,10 @@ class Images(DatasetLMDB):
     def _load_image_data(self, index):
         # select random image from list of images for that sample
         nb_images = self.get(index, 'numims')
-        im_idx = torch.randperm(nb_images)[0]
+        if Options()['dataset'].get("debug", False):
+            im_idx = 0
+        else:
+            im_idx = torch.randperm(nb_images)[0]
         index_img = self.get(index, 'impos')[im_idx] - 1 # lua to python
 
         path_img = self.format_path_img(self.get(index_img, 'imnames'))
@@ -249,10 +262,9 @@ class Recipes(DatasetLMDB):
 class Recipe1M(DatasetLMDB):
 
     def __init__(self, dir_data, split, batch_size=100, nb_threads=4, freq_mismatch=0.,
-            batch_sampler='triplet_classif', mismatch=True,
+            batch_sampler='triplet_classif',
             image_from='dataset', image_tf=utils.default_image_tf(256, 224)):
         super(Recipe1M, self).__init__(dir_data, split, batch_size, nb_threads)
-        self.mismatch = mismatch
         self.images_dataset = Images(dir_data, split, batch_size, nb_threads, image_from=image_from, image_tf=image_tf)
         self.recipes_dataset = Recipes(dir_data, split, batch_size, nb_threads)
         self.freq_mismatch = freq_mismatch
@@ -273,7 +285,10 @@ class Recipe1M(DatasetLMDB):
 
     def make_batch_loader(self, shuffle=True):
         if self.split in ['val', 'test'] or self.batch_sampler == 'random':
-            batch_loader = super(Recipe1M, self).make_batch_loader(shuffle=shuffle)
+            if Options()['dataset'].get("debug", False):
+                batch_loader = super(Recipe1M, self).make_batch_loader(shuffle=False)
+            else:
+                batch_loader = super(Recipe1M, self).make_batch_loader(shuffle=shuffle)
             Logger()('Dataset will be sampled with "random" batch_sampler.')
         elif self.batch_sampler == 'triplet_classif':
             batch_sampler = BatchSamplerTripletClassif(
@@ -297,7 +312,7 @@ class Recipe1M(DatasetLMDB):
         item['index'] = index
         item['recipe'] = self.recipes_dataset[index]
 
-        if self.mismatch:
+        if self.freq_mismatch > 0:
             is_match = torch.rand(1)[0] > self.freq_mismatch
         else:
             is_match = True

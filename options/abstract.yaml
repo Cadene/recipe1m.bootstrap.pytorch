@@ -13,6 +13,7 @@ dataset:
     batch_size: 100 # = optimizer.batch_size or inferior
     batch_sampler: triplet_classif # random or triplet_classif
     nb_threads: 4
+    debug: False
 model:
     import: recipe1m.models.factory
     name: trijoint

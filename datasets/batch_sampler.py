@@ -1,5 +1,6 @@
 import copy
 import torch
+import numpy as np
 from torch.utils.data.sampler import Sampler
 #from torch.utils.data.sampler import SequentialSampler
 from torch.utils.data.sampler import RandomSampler
@@ -7,6 +8,7 @@ from torch.utils.data.sampler import RandomSampler
 #from torch.utils.data.sampler import WeightedRandomSampler
 from torch.utils.data.sampler import BatchSampler
 
+from bootstrap.lib.options import Options
 
 class RandomSamplerValues(Sampler):
     """Samples elements randomly, without replacement.
@@ -26,7 +28,11 @@ class RandomSamplerValues(Sampler):
         self.data_source = data_source
 
     def __iter__(self):
-        generator = iter(torch.randperm(len(self.data_source)).long())
+        if Options()['dataset'].get("debug", False):
+            generator = iter(list(range(len(self.data_source))))
+        else:
+            generator = iter(torch.randperm(len(self.data_source)).long())
+        
         for value in generator:
             yield self.data_source[value]
 
@@ -81,9 +87,13 @@ class BatchSamplerClassif(object):
             nb_samples = self.batch_size // self.nb_indices_same_class
             for j in range(nb_samples):
                 # Class sampling
-                idx = torch.multinomial(nb_samples_by_class,
-                    1, # num_samples
-                    False)[0] #replacement
+                if Options()['dataset'].get("debug", False):
+                    idx = np.random.multinomial(1,(nb_samples_by_class / sum(nb_samples_by_class)).numpy()).argmax()
+                else:
+                    idx = torch.multinomial(nb_samples_by_class,
+                        1, # num_samples
+                        False)[0] #replacement
+
                 nb_samples_by_class[idx] -= 1
                 batch += gen_by_class[idx].__next__()
             yield batch
