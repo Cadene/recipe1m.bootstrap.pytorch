@@ -157,52 +157,60 @@ python -m bootstrap.run \
 
 ### Available models
 
-- Pairwise loss:
+- Pairwise loss (PWC):
+
+```
+python -m bootstrap.run \
+-o recipe1m/options/pairwise.yaml \
+--exp.dir logs/pairwise
+```
+
+- Pairwise with positive and negative margins loss (PWC++):
+
+```
+python -m bootstrap.run \
+-o recipe1m/options/pairwise_plus.yaml \
+--exp.dir logs/pairwise_plus
+```
+
+- Triplet loss (VSE):
+
+```
+python -m bootstrap.run \
+-o recipe1m/options/avg_nosem.yaml \
+--exp.dir logs/avg_nosem
+```
+
+- Triplet loss with semantic loss (AdaMine_avg):
 
 ```
 python -m bootstrap.run \
 -o recipe1m/options/avg.yaml \
---exp.dir logs/2018-05-18_avg
+--exp.dir logs/avg
 ```
 
-- Triplet (VSE) loss:
-
-```
-python -m bootstrap.run \
--o recipe1m/options/avg.yaml \
---exp.dir logs/2018-05-18_avg
-```
-
-- Triplet loss with semantic loss (ours):
+- Triplet loss with semantic loss and adaptive sampling (AdaMine):
 
 ```
 python -m bootstrap.run \
--o recipe1m/options/avg.yaml \
---exp.dir logs/2018-05-18_avg
+-o recipe1m/options/adamine.yaml \
+--exp.dir logs/adamine
 ```
 
-- Triplet loss with semantic loss and adaptive sampling (ours):
-
-```
-python -m bootstrap.run \
--o recipe1m/options/avg.yaml \
---exp.dir logs/2018-05-18_avg
-```
-
-- Triplet Max (VSE++) loss:
+- Triplet Max loss (VSE++):
 
 ```
 python -m bootstrap.run \
--o recipe1m/options/avg.yaml \
---exp.dir logs/2018-05-18_avg
+-o recipe1m/options/max.yaml \
+--exp.dir logs/max
 ```
 
 - Lifted structure loss:
 
 ```
 python -m bootstrap.run \
--o recipe1m/options/avg.yaml \
---exp.dir logs/2018-05-18_avg
+-o recipe1m/options/lifted_struct.yaml \
+--exp.dir logs/lifted_struct
 ```
 
 ## Pretrained models
