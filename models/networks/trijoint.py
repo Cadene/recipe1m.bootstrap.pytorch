@@ -3,7 +3,7 @@ import pretrainedmodels
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.serialization import load_lua
+import pickle
 from bootstrap.lib.logger import Logger
 from bootstrap.lib.options import Options
 
@@ -113,7 +113,8 @@ class RecipeEmbedding(nn.Module):
         return x
 
     def _make_emb_ingrs(self):
-        data = load_lua(self.path_ingrs)
+        with open(self.path_ingrs, 'rb') as fobj:
+            data = pickle.load(fobj)
         
         self.nb_ingrs = data[0].size(0)
         self.dim_ingr_in = data[0].size(1)

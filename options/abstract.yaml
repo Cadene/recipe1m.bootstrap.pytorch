@@ -19,7 +19,7 @@ model:
     name: trijoint
     network:
         name: trijoint
-        path_ingrs: /local/cadene/data/im2recipe/text/vocab.t7
+        path_ingrs: /local/cadene/data/im2recipe/text/vocab.pkl
         dim_image_out: 2048
         with_ingrs: True
         dim_ingr_out: 300

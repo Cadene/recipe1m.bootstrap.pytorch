@@ -58,7 +58,7 @@ class Trijoint(torch.optim.Optimizer):
             for group in self.optimizers[k].param_groups:
                 for p in group['params']:
                     params.append(p)
-        self.total_norm = clip_grad_norm_(params, self.clip_grad).item()
+        self.total_norm = clip_grad_norm_(params, self.clip_grad)
         Logger().log_value('optimizer.total_norm', self.total_norm, should_print=False)
 
     def print_total_norm(self):

@@ -5,7 +5,6 @@ import torch
 import torch.utils.data as data
 
 from PIL import Image
-from torch.utils.serialization import load_lua
 
 from bootstrap.lib.options import Options
 from bootstrap.lib.logger import Logger
@@ -191,7 +190,8 @@ class Recipes(DatasetLMDB):
     def __init__(self, dir_data, split, batch_size, nb_threads):
         super(Recipes, self).__init__(dir_data, split, batch_size, nb_threads)
         self.path_ingrs = Options()['model']['network']['path_ingrs']
-        data = load_lua(self.path_ingrs)
+        with open(self.path_ingrs, 'rb') as fobj:
+            data = pickle.load(fobj)
         # idx+1 because 0 is padding
         # https://github.com/torralba-lab/im2recipe/blob/master/pyscripts/mk_dataset.py#L98
         self.ingrid_to_ingrname = {idx+2:name for idx, name in enumerate(data[1])}
