@@ -1,6 +1,6 @@
 __include__: abstract.yaml
 exp:
-    dir: logs/recipe1m/triplet
+    dir: logs/recipe1m/avg
 dataset:
     freq_mismatch: 0.0
 model:
