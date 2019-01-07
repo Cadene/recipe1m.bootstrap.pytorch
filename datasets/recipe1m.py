@@ -88,8 +88,8 @@ class DatasetLMDB(Dataset):
         self.path_pkl = os.path.join(self.dir_data, 'classes1M.pkl')
         #https://github.com/torralba-lab/im2recipe/blob/master/pyscripts/bigrams.py#L176
         with open(self.path_pkl, 'rb') as f:
-            _ = pickle.load(f) # YES DIS IZ NOT A JOKE
-            self.classes = pickle.load(f)
+            _ = pickle.load(f) # load the first line/object
+            self.classes = pickle.load(f) # load the second line/object
 
         self.cname_to_cid = {v:k for k,v in self.classes.items()}
 

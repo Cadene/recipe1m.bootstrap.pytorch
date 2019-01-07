@@ -4,7 +4,7 @@ exp:
 dataset:
     import: recipe1m.datasets.factory
     name: recipe1m
-    dir: /local/cadene/data/im2recipe
+    dir: data/recipe1m
     train_split: train
     eval_split: val
     nb_classes: 1048
@@ -19,7 +19,7 @@ model:
     name: trijoint
     network:
         name: trijoint
-        path_ingrs: /local/cadene/data/im2recipe/text/vocab.pkl
+        path_ingrs: data/recipe1m/text/vocab.pkl
         dim_image_out: 2048
         with_ingrs: True
         dim_ingr_out: 300
@@ -33,7 +33,7 @@ model:
     criterion: __NotImplemented__
     metric:
         name: trijoint
-        retrieval_dir: /tmp/retrieval
+        retrieval_dir: /tmp/recipe1m
         nb_bags: 10
         nb_matchs_per_bag: 1000
 optimizer:

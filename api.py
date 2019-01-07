@@ -10,6 +10,8 @@ $ python -m recipe1m.api -o logs/recipe1m/adamine/options.yaml \
 --misc.logs_name api
 ```
 """
+# TODO: add ip and port as cli?
+# TODO: save the image and the results
 
 import os
 import re
@@ -34,28 +36,10 @@ from bootstrap.run import main
 from .models.metrics.trijoint import fast_distance
 
 
-@Request.application
-def application(request):
-    if 'image' in request.form:
-        pil_img = decode_image(request.form['image'])
-        out = process_image(pil_img)
-        answer = json.dumps(out)
-        response = Response(answer)
-    else:
-        response = Response('Image missing')
-        
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,PATCH')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-    response.headers.add('X-XSS-Protection', '0')    
-    return response
-
-
 def decode_image(strb64):
     strb64 = re.sub('^data:image/.+;base64,', '', strb64)
     pil_img = Image.open(BytesIO(base64.b64decode(strb64)))
     return pil_img
-
 
 def encode_image(pil_img):
     buffer_ = BytesIO()
@@ -64,26 +48,37 @@ def encode_image(pil_img):
     img_str = 'data:image/png;base64,'+img_str
     return img_str
 
+def load_img(path):
+    with open(path, 'rb') as f:
+        with Image.open(f) as img:
+            return img.convert('RGB')
 
-def process_image(pil_img):
-    # TODO: save the image and the results
-
+def process_image(pil_img, mode='recipe'):
     tensor = engine.dataset['eval'].images_dataset.image_tf(pil_img)
     item = {'data': tensor}
     batch = engine.dataset['eval'].items_tf()([item])
     batch = engine.model.prepare_batch(batch)
 
-    # TODO: add (for pytorch0.4)
-    #with torch.no_grad():
-    img_emb = engine.model.network.image_embedding(batch)
+    if mode == 'recipe':
+        embs = rcp_embs
+    elif mode == 'image':
+        embs = img_embs
+    elif mode == 'all':
+        embs = all_embs
 
-    distances = fast_distance(img_emb.data.cpu(), rcp_embs)
-    values, ids = distances[0].sort()
+    with torch.no_grad():
+        img_emb = engine.model.network.image_embedding(batch)
+        img_emb = img_emb.data.cpu()
+        distances = fast_distance(img_emb, embs)
+        values, ids = distances[0].sort()
 
-    out = {}
+    out = []
     for i in range(5):
-        idx = ids[i]
+        idx = ids[i].item()
+        if mode == 'all':
+            idx = all_ids[idx]
         item = engine.dataset['eval'][idx]
+
         info = {}
         info['class_name'] = item['recipe']['class_name']
         info['ingredients'] = item['recipe']['layer1']['ingredients']
@@ -92,19 +87,38 @@ def process_image(pil_img):
         info['title'] = item['recipe']['layer1']['title']
         info['path_img'] = item['image']['path']
         info['img_strb64'] = encode_image(load_img(item['image']['path']))
-        out['top{}'.format(i)] = info
+        out.append(info)
     
     return out
 
-def load_img(path):
-    with open(path, 'rb') as f:
-        with Image.open(f) as img:
-            return img.convert('RGB')
+@Request.application
+def application(request):
+    utils.set_random_seed(Options()['misc']['seed'])
+
+    if 'image' not in request.form:
+        return Response('"image" POST field is missing')
+    if  'mode' not in request.form:
+        return Response('"mode" POST field is missing')
+
+    if request.form['mode'] not in ['recipe', 'image', 'all']:
+        return Response('"mode" must be equals to ' + ' | '.join(['recipe', 'image', 'all']))
+
+    pil_img = decode_image(request.form['image'])
+    out = process_image(pil_img, mode=request.form['mode'])
+    out = json.dumps(out)
+    response = Response(out)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,PATCH')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+    response.headers.add('X-XSS-Protection', '0')
+    return response
 
 def api(path_opts=None):
     global engine
-    global rcp_embs
     global img_embs
+    global rcp_embs
+    global all_embs
+    global all_ids
 
     Options(path_opts)
     utils.set_random_seed(Options()['misc']['seed'])
@@ -131,15 +145,11 @@ def api(path_opts=None):
     path_rcp_embs = os.path.join(dir_extract, 'recipe_emdeddings.pth')
     img_embs = torch.load(path_img_embs)
     rcp_embs = torch.load(path_rcp_embs)
+    all_embs = torch.cat([img_embs, rcp_embs], dim=0)
+    all_ids = list(range(img_embs.shape[0])) + list(range(rcp_embs.shape[0]))
 
-    # BEGIN DEBUG
-    # pil_img = load_img(engine.dataset['eval'][100]['image']['path'])
-    # out = process_image(pil_img)
-    # END DEBUG
-
-    # TODO: add this as cli?
-    my_local_ip = 'localhost' #'192.168.0.41'
-    my_local_port = 8080 #3456
+    my_local_ip = '132.227.204.160' # localhost | 192.168.0.41 (hostname --ip-address)
+    my_local_port = 3456 # 8080 | 3456
     run_simple(my_local_ip, my_local_port, application)
 
 
