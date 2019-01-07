@@ -24,8 +24,9 @@ It was also the occasion to compare several state-of-the-art metric learning los
     * [PWC](#pwc)
     * [PWC++ (Ours)](#pwc-ours)
     * [VSE](#vse)
-    * [VSE++](#vse)
-    * [AdaMine_avg (Ours)](#adamine-avg-ours)
+    * [VSE++](#vse-1)
+    * [AdaMine_avg (Ours)](#adamine_avg-ours)
+    * [AdaMine (Ours)](#adamine-ours)
     * [Lifted structure](#lifted-structure)
 * [Documentation](#documentation)
 * [Useful commands](#useful-commands)
@@ -308,7 +309,8 @@ TODO
 ```
 
 
-## Citation
+
+## Citation
 
 ```
 @inproceddings{carvalho2018cross,
