@@ -15,7 +15,7 @@ It was also the occasion to compare several state-of-the-art metric learning los
     * [Quick insight about AdaMine](#quick-insight-about-our-adamine)
 * [Installation](#installation)
     * [Install python3](#install-python3)
-    * [Clone bootstrap.pytorch](#clone-boostrap-pytorch)
+    * [Clone & requirements](#clone-requirements)
     * [Download dataset](#download-dataset)
 * [Quick start](#quick-start)
     * [Train a model](#train-a-model-on-the-train-val-sets)
@@ -89,17 +89,15 @@ conda create --name recipe1m python=3.7
 source activate recipe1m
 ```
 
-### 2. Fork/clone bootstrap.pytorch and this repo
+### 2. Clone & requirements
 
 We use a [high level framework](https://github.com/Cadene/bootstrap.pytorch.git) to be able to focus on the model instead of boilerplate code.
 
 ```
 cd $HOME
-git clone https://github.com/Cadene/bootstrap.pytorch.git recipe1m.project
-cd recipe1m.project
+git clone https://github.com/Cadene/recipe1m.bootstrap.pytorch.git
+cd recipe1m.bootstrap.pytorch
 pip install -r requirements.txt
-git clone https://github.com/Cadene/recipe1m.bootstrap.pytorch.git recipe1m
-pip install -r recipe1m/requirements.txt
 ```
 
 ### 3. Download dataset

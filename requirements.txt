@@ -2,5 +2,6 @@ torch>=1.0
 torchvision
 lmdb
 pretrainedmodels
+bootstrap.pytorch
 tqdm
 werkzeug
