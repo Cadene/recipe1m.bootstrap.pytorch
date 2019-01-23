@@ -22,7 +22,7 @@ def default_items_tf():
     ])
 
 
-class Dataset(data.Dataset):
+class Images(data.Dataset):
 
     def __init__(self, dir_data, split, batch_size, nb_threads, items_tf=default_items_tf):
         super(Dataset, self).__init__()
@@ -30,7 +30,7 @@ class Dataset(data.Dataset):
         self.split = split
         self.batch_size = batch_size
         self.nb_threads = nb_threads
-        self.items_tf = items_tf
+        self.items_tf = default_items_tf
 
     def make_batch_loader(self, shuffle=True):
         # allways shuffle even for valset/testset

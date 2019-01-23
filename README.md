@@ -99,7 +99,7 @@ git clone https://github.com/Cadene/bootstrap.pytorch.git recipe1m.project
 cd recipe1m.project
 pip install -r requirements.txt
 git clone https://github.com/Cadene/recipe1m.bootstrap.pytorch.git recipe1m
-pip install -r recip1m/requirements.txt
+pip install -r recipe1m/requirements.txt
 ```
 
 ### 3. Download dataset
@@ -107,9 +107,8 @@ pip install -r recip1m/requirements.txt
 Please, create an account on http://im2recipe.csail.mit.edu/ and agree to the terms of use. This dataset was made for research and not for commercial use.
 
 ```
-# DATA=data/recip1m
-mkdir $DATA
-cd $DATA
+mkdir data/recip1m
+cd data/recip1m
 wget http://data.lip6.fr/cadene/recipe1m/bigrams1M.pkl
 wget http://data.lip6.fr/cadene/recipe1m/classes1M.pkl
 wget http://data.lip6.fr/cadene/recipe1m/data_lmdb.tar
@@ -214,8 +213,7 @@ python -m bootstrap.run -o recipe1m/options/adamine.yaml
 Features from testing set:
 
 ```
-# LOGS=/local/cadene/logs/recip1m
-cd $LOGS
+cd logs/recipe1m
 wget http://data.lip6.fr/cadene/im2recipe/logs/adamine.tar.gz
 tar -xzvf adamine.tar.gz
 ```

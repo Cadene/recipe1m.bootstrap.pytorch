@@ -53,7 +53,7 @@ def load_img(path):
         with Image.open(f) as img:
             return img.convert('RGB')
 
-def process_image(pil_img, mode='recipe'):
+def process_image(pil_img, mode='recipe', top=5):
     tensor = engine.dataset['eval'].images_dataset.image_tf(pil_img)
     item = {'data': tensor}
     batch = engine.dataset['eval'].items_tf()([item])
@@ -73,7 +73,7 @@ def process_image(pil_img, mode='recipe'):
         values, ids = distances[0].sort()
 
     out = []
-    for i in range(5):
+    for i in range(top):
         idx = ids[i].item()
         if mode == 'all':
             idx = all_ids[idx]
@@ -97,14 +97,18 @@ def application(request):
 
     if 'image' not in request.form:
         return Response('"image" POST field is missing')
-    if  'mode' not in request.form:
+    if 'mode' not in request.form:
         return Response('"mode" POST field is missing')
+    if 'top' not in request.form:
+        return Response('"top" POST field is missing')
 
     if request.form['mode'] not in ['recipe', 'image', 'all']:
         return Response('"mode" must be equals to ' + ' | '.join(['recipe', 'image', 'all']))
 
     pil_img = decode_image(request.form['image'])
-    out = process_image(pil_img, mode=request.form['mode'])
+    out = process_image(pil_img,
+        mode=request.form['mode'],
+        top=int(request.form['top']))
     out = json.dumps(out)
     response = Response(out)
     response.headers.add('Access-Control-Allow-Origin', '*')
