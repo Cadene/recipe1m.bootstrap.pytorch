@@ -121,6 +121,8 @@ tar -xzvf recipe1M.tar.gz
 rm recipe1M.tar.gz
 tar -xzvf text.tar.gz
 rm text.tar.gz
+cd text
+wget http://data.lip6.fr/cadene/recipe1m/text/vocab.pkl
 ```
 
 Note: Features extracted from resnet50 are included in data_lmdb.
