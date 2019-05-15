@@ -1,3 +1,4 @@
+__include__: bootstrap/options/abstract.yaml
 exp:
     dir: logs/recipe1m/default
     resume: # best, last, or empty (from scratch)
